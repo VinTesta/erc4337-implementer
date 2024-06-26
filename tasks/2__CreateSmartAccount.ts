@@ -1,18 +1,21 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-export const ExecuteSmartAccountFunction = async (
+export const CreateNewAccount = async (
   args: any,
   hre: HardhatRuntimeEnvironment
 ) => {
 
   const accountFactoryAddress = args.accountfactoryaddress;
   const entryPointAddress = args.entrypointaddress;
+  const accountNonce: number = args.nonce;
   const [ownerOfAccount] = await hre.ethers.getSigners();
 
   if (!accountFactoryAddress)
-    throw "Expected argument accountFactoryAddress not found";
+    throw "Expected argument 'accountFactoryAddress' not found";
+  if (!accountNonce)
+    throw "Expected argument 'nonce' not found";
   if (!entryPointAddress) 
-    throw "Expected argument entryPointAddress not found";
+    throw "Expected argument 'entryPointAddress' not found";
 
   /**
    * Contrato entry point já deployado anteriormente.
@@ -35,7 +38,7 @@ export const ExecuteSmartAccountFunction = async (
    */
   const senderContract = await hre.ethers.getCreateAddress({
     from: accountFactoryAddress,
-    nonce: 1,
+    nonce: accountNonce,
   });
 
   /**
@@ -72,12 +75,13 @@ export const ExecuteSmartAccountFunction = async (
    * Esse calldata poderia ser uma transferencia, um mint...
    */
   const Account = await hre.ethers.getContractFactory("Account");
-  
+  const userOpNonce = await entryPoint.getNonce(senderContract, 0);
+
   const userOperation = {
     sender: senderContract,
-    nonce: await entryPoint.getNonce(senderContract, 0),
+    nonce: userOpNonce,
     initCode,
-    callData: Account.interface.encodeFunctionData("execute"),
+    callData: "0x",
     callGasLimit: 200_000,
     verificationGasLimit: 200_000,
     preVerificationGas: 50_000,

@@ -6,6 +6,7 @@ export const DepositFundsToSender = async (
 ) => {
   const accountFactoryAddress = args.accountfactoryaddress;
   const entryPointAddress = args.entrypointaddress;
+  const accountNonce = args.nonce;
 
   if (!accountFactoryAddress)
     throw "Expected argument accountFactoryAddress not found";
@@ -32,7 +33,7 @@ export const DepositFundsToSender = async (
    */
   const sender = await hre.ethers.getCreateAddress({
     from: accountFactoryAddress,
-    nonce: 1,
+    nonce: accountNonce,
   });
 
   const tx = await entryPoint.depositTo(sender, {
