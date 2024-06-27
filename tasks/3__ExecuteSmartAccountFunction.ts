@@ -7,6 +7,7 @@ export const ExecuteSmartAccountFunction = async (
 
   const accountFactoryAddress = args.accountfactoryaddress;
   const entryPointAddress = args.entrypointaddress;
+  const paymasterAddress = args.paymasteraddress;
   const accountNonce: number = args.nonce;
   const [ownerOfAccount] = await hre.ethers.getSigners();
 
@@ -71,7 +72,7 @@ export const ExecuteSmartAccountFunction = async (
     preVerificationGas: 50_000,
     maxFeePerGas: hre.ethers.parseUnits("10", "gwei"),
     maxPriorityFeePerGas: hre.ethers.parseUnits("5", "gwei"),
-    paymasterAndData: "0x",
+    paymasterAndData: paymasterAddress || "0x",
     signature: "0x",
   };
 

@@ -25,7 +25,8 @@ task(
   DepositFundsToSender
 )
 .addParam("accountfactoryaddress", "The address of the account factory")
-.addParam("nonce", "The nonce of the account")
+.addOptionalParam("nonce", "The nonce of the account")
+.addOptionalParam("paymasteraddress", "The address of the paymaster")
 .addParam("entrypointaddress", "The address of the entry point");
 
 task(
@@ -35,6 +36,7 @@ task(
 )
 .addParam("accountfactoryaddress", "The address of the account factory")
 .addParam("nonce", "The nonce of the account")
+.addOptionalParam("paymasteraddress", "The address of the paymaster")
 .addParam("entrypointaddress", "The address of the entry point");
 
 task(
@@ -44,6 +46,7 @@ task(
 )
 .addParam("accountfactoryaddress", "The address of the account factory")
 .addParam("nonce", "The nonce of the account")
+.addOptionalParam("paymasteraddress", "The address of the paymaster")
 .addParam("entrypointaddress", "The address of the entry point");
 
 export default config;
