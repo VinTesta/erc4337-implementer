@@ -17,7 +17,6 @@ contract Account is IAccount {
    * Essa variavel armazenar um valor ficticio para testarmos
    * se a account está realizando transações
    */
-  uint public count;
   address public owner;
 
   constructor(address _owner) {
@@ -42,8 +41,11 @@ contract Account is IAccount {
     return 0;
   }
 
-  function execute() external {
-    count++;
+  // Função genérica para executar chamadas externas
+  function execute(address target, uint256 value, bytes calldata data) external returns (bytes memory) {
+      (bool success, bytes memory result) = target.call{value: value}(data);
+      require(success, "Call failed");
+      return result;
   }
 }
 
@@ -51,5 +53,13 @@ contract AccountFactory {
   function createAccount(address owner) external returns (address) {
     Account acc = new Account(owner);
     return address(acc);
+  }
+}
+
+contract Counter {
+  uint public count;
+
+  function iterate() external {
+    count += 1;
   }
 }

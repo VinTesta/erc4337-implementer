@@ -7,8 +7,9 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 const AccountFactory = buildModule("AccountFactoryModule", (module) => {
 
   const accountFactory = module.contract("AccountFactory");
+  const counter = module.contract("Counter");
 
-  return { accountFactory };
+  return { accountFactory, counter };
 });
 
 export default AccountFactory;

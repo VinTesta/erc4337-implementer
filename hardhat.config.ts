@@ -47,6 +47,7 @@ task(
 .addParam("accountfactoryaddress", "The address of the account factory")
 .addParam("nonce", "The nonce of the account")
 .addOptionalParam("paymasteraddress", "The address of the paymaster")
+.addParam("target", "The address of target contract to call")
 .addParam("entrypointaddress", "The address of the entry point");
 
 export default config;
