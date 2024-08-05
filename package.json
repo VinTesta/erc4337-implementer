@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deployContracts": "npx hardhat ignition deploy ./ignition/modules/1__EntryPointDeploy.ts && npx hardhat ignition deploy ./ignition/modules/2__AccountFactoryDeploy.ts && npx hardhat ignition deploy ./ignition/modules/3__PaymasterDeploy.ts"
   },
   "author": "",
   "license": "ISC",

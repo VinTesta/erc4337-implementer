@@ -1,4 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+require('dotenv').config()
 
 export const CreateNewAccount = async (
   args: any,
@@ -9,7 +10,9 @@ export const CreateNewAccount = async (
   const entryPointAddress = args.entrypointaddress;
   const paymasterAddress = args.paymasteraddress;
   const accountNonce: number = args.nonce;
-  const [ownerOfAccount] = await hre.ethers.getSigners();
+
+  if(process.env.PRIVATE_KEY === undefined) throw "PRIVATE_KEY not found in .env file";
+  const ownerOfAccount = new hre.ethers.Wallet(process.env.PRIVATE_KEY);
 
   if (!accountFactoryAddress)
     throw "Expected argument 'accountFactoryAddress' not found";
@@ -47,10 +50,19 @@ export const CreateNewAccount = async (
    * O método getContractFactory é responsável apenas por buscar
    * o contrato na rede. Ele é um método do próprio ethers.js
    */
-  const AccountFactory = await hre.ethers.getContractFactory(
+  const accountFactoryContract = await hre.ethers.getContractFactory(
     "AccountFactory"
   );
 
+  const AccountFactory = await hre.ethers.getContractAt(
+    "AccountFactory",
+    accountFactoryAddress
+  )
+
+  const message = "Generating new Account";
+  const messageHash = hre.ethers.id(message);
+  const signature = await ownerOfAccount.signMessage(hre.ethers.getBytes(messageHash));
+  
   /**
    * Aqui nós estamos capturando o initCode.
    * Ele é composto em seus primeiros 20 bytes pelo endereço
@@ -65,8 +77,8 @@ export const CreateNewAccount = async (
   const ownerSignerAddress = await ownerOfAccount.getAddress();
   const initCode =
     accountFactoryAddress +
-    AccountFactory.interface
-      .encodeFunctionData("createAccount", [ownerSignerAddress])
+    accountFactoryContract.interface
+      .encodeFunctionData("createAccount", [ownerSignerAddress, {message, signature}])
       .slice(2);
 
   /**
@@ -83,11 +95,11 @@ export const CreateNewAccount = async (
     nonce: userOpNonce,
     initCode,
     callData: "0x",
-    callGasLimit: 400_000,
-    verificationGasLimit: 400_000,
-    preVerificationGas: 100_000,
-    maxFeePerGas: hre.ethers.parseUnits("100", "gwei"),
-    maxPriorityFeePerGas: hre.ethers.parseUnits("50", "gwei"),
+    callGasLimit: 100_000,
+    verificationGasLimit: 800_000,
+    preVerificationGas: 50_000,
+    maxFeePerGas: hre.ethers.parseUnits("50", "gwei"),
+    maxPriorityFeePerGas: hre.ethers.parseUnits("0", "gwei"),
     paymasterAndData: paymasterAddress || "0x",
     signature: "0x",
   };

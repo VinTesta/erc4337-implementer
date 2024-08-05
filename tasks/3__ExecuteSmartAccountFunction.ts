@@ -16,7 +16,9 @@ export const ExecuteSmartAccountFunction = async (
   const paymasterAddress = args.paymasteraddress;
   const targetContract = args.target;
   const accountNonce: number = args.nonce;
-  const [ownerOfAccount] = await hre.ethers.getSigners();
+
+  if(process.env.PRIVATE_KEY === undefined) throw "PRIVATE_KEY not found in .env file";
+  const ownerOfAccount = new hre.ethers.Wallet(process.env.PRIVATE_KEY);
 
   if (!accountFactoryAddress)
     throw "Expected argument 'accountFactoryAddress' not found";
@@ -58,6 +60,15 @@ export const ExecuteSmartAccountFunction = async (
     "AccountFactory"
   );
 
+  /**
+   * Essa mensagem deve ser assinada pela mesma carteira que criou a smart account
+   * para garantir que a execução da função seja feita pelo dono da conta.
+   * Case qualquer outra carteira assine a mesma, o contrato irá rejeitar a execução.
+   */
+  const message = "Generating new Account";
+  const messageHash = hre.ethers.id(message);
+  const signature = await ownerOfAccount.signMessage(hre.ethers.getBytes(messageHash));
+
   const ownerSignerAddress = await ownerOfAccount.getAddress();
 
   /**
@@ -74,7 +85,14 @@ export const ExecuteSmartAccountFunction = async (
     sender: senderContract,
     nonce: userOpNonce,
     initCode: "0x",
-    callData: Account.interface.encodeFunctionData("execute", [targetContract, 0, Counter.interface.encodeFunctionData("iterate", [])]),
+    callData: Account.interface.encodeFunctionData(
+      "execute", 
+      [
+        targetContract, 
+        0, 
+        Counter.interface.encodeFunctionData("iterate", []),
+        {message, signature}
+      ]),
     callGasLimit: 200_000,
     verificationGasLimit: 200_000,
     preVerificationGas: 50_000,
