@@ -96,6 +96,7 @@ contract Account is IAccount {
 contract AccountFactory {
 
   mapping (uint256 => address) private accountList;
+  uint256 private factoryNonce;
   address private owner;
 
   struct SignedMessage {
@@ -103,10 +104,11 @@ contract AccountFactory {
     bytes signature;
   }
 
-  modifier verifySignature(string memory message, bytes memory signature){
-    bytes32 messageHash = keccak256(abi.encodePacked(message));
+  modifier verifySignature(bytes memory signature){
+    bytes32 messageHash = getFactoryNonce();
     bool isVerified = getSignerAddress(messageHash, signature) == owner;
     require(isVerified, "You can't create an smartAccount from this contract!");
+    factoryNonce++;
     _;
   }
 
@@ -114,12 +116,16 @@ contract AccountFactory {
     owner = msg.sender;
   }
 
+  function getFactoryNonce() public view returns(bytes32) {
+    return keccak256(abi.encodePacked(factoryNonce));
+  }
+
   function getAccountFromNonce(uint256 nonce) public view returns(address) {
     return accountList[nonce];
   }
   
-  function createAccount(uint256 accountNonce, address _owner, SignedMessage memory signedMessage) 
-    verifySignature(signedMessage.message, signedMessage.signature) 
+  function createAccount(uint256 accountNonce, address _owner, bytes memory signature) 
+    verifySignature(signature) 
     external returns (address) 
   {
     Account acc = new Account(_owner);

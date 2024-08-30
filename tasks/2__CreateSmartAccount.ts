@@ -59,9 +59,8 @@ export const CreateNewAccount = async (
     accountFactoryAddress
   )
 
-  const message = "Generating new Account";
-  const messageHash = hre.ethers.id(message);
-  const signature = await ownerOfAccount.signMessage(hre.ethers.getBytes(messageHash));
+  const factoryNonce = await AccountFactory.getFactoryNonce();
+  const signature = await ownerOfAccount.signMessage(hre.ethers.getBytes(factoryNonce));
   
   /**
    * Aqui nós estamos capturando o initCode.
@@ -78,7 +77,7 @@ export const CreateNewAccount = async (
   const initCode =
     accountFactoryAddress +
     accountFactoryContract.interface
-      .encodeFunctionData("createAccount", [accountNonce, ownerSignerAddress, {message, signature}])
+      .encodeFunctionData("createAccount", [accountNonce, ownerSignerAddress, signature])
       .slice(2);
 
   /**
