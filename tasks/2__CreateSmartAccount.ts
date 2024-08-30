@@ -78,7 +78,7 @@ export const CreateNewAccount = async (
   const initCode =
     accountFactoryAddress +
     accountFactoryContract.interface
-      .encodeFunctionData("createAccount", [ownerSignerAddress, {message, signature}])
+      .encodeFunctionData("createAccount", [accountNonce, ownerSignerAddress, {message, signature}])
       .slice(2);
 
   /**

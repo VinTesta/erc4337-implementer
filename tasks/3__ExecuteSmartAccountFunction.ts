@@ -60,14 +60,21 @@ export const ExecuteSmartAccountFunction = async (
     "AccountFactory"
   );
 
+  const deployedAccountFactory = await hre.ethers.getContractAt(
+    'AccountFactory',
+    accountFactoryAddress
+  )
+
+  const contractAddress = await deployedAccountFactory.getAccountFromNonce(accountNonce);
+  const deployedAccount = await hre.ethers.getContractAt('Account', contractAddress);
+
   /**
    * Essa mensagem deve ser assinada pela mesma carteira que criou a smart account
    * para garantir que a execução da função seja feita pelo dono da conta.
    * Case qualquer outra carteira assine a mesma, o contrato irá rejeitar a execução.
    */
-  const message = "Generating new Account";
-  const messageHash = hre.ethers.id(message);
-  const signature = await ownerOfAccount.signMessage(hre.ethers.getBytes(messageHash));
+  const txNonce = await deployedAccount.getMessage();
+  const signature = await ownerOfAccount.signMessage(hre.ethers.getBytes(txNonce));
 
   const ownerSignerAddress = await ownerOfAccount.getAddress();
 
@@ -91,7 +98,7 @@ export const ExecuteSmartAccountFunction = async (
         targetContract, 
         0, 
         Counter.interface.encodeFunctionData("iterate", []),
-        {message, signature}
+        signature
       ]),
     callGasLimit: 200_000,
     verificationGasLimit: 200_000,
